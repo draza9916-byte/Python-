@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python期末复习系统</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f7fa;min-height:100vh}
+.expired{display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)}
+.expired-box{background:#fff;padding:60px;border-radius:20px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.expired-box h1{color:#e74c3c;font-size:2.5em;margin-bottom:20px}
+.expired-box p{color:#666;font-size:1.2em}
+header{background:#fff;padding:15px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100}
+.header-content{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px}
+.logo h1{font-size:1.3em;color:#333}
+.logo p{font-size:0.75em;color:#888}
+.nav-btns{display:flex;gap:10px;flex-wrap:wrap}
+.nav-btn{padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-size:0.9em;transition:all 0.3s}
+.nav-btn.secondary{background:#f0f0f0;color:#666}
+.nav-btn.secondary:hover,.nav-btn.secondary.active{background:#e8f0fe;color:#1a73e8}
+.nav-btn.primary{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff}
+.nav-btn.primary:hover{box-shadow:0 4px 15px rgba(102,126,234,0.4)}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:20px;margin:30px 0}
+.chapter-card{background:#fff;border-radius:16px;padding:25px;border:2px solid #eee;cursor:pointer;transition:all 0.3s}
+.chapter-card:hover{border-color:#667eea;box-shadow:0 10px 30px rgba(102,126,234,0.15)}
+.chapter-card .icon{font-size:2.5em;margin-bottom:10px}
+.chapter-card h3{color:#333;margin-bottom:5px}
+.chapter-card p{color:#888;font-size:0.9em}
+.chapter-card .btns{display:flex;gap:10px;margin-top:15px}
+.chapter-card .btn{flex:1;padding:8px;border:none;border-radius:8px;cursor:pointer;font-size:0.85em}
+.chapter-card .btn.browse{background:#f0f0f0;color:#666}
+.chapter-card .btn.test{background:#e8f0fe;color:#1a73e8}
+.cta-box{background:linear-gradient(135deg,#667eea,#764ba2);border-radius:20px;padding:50px;text-align:center;color:#fff;margin-top:30px}
+.cta-box h2{font-size:1.8em;margin-bottom:10px}
+.cta-box p{opacity:0.9;margin-bottom:25px}
+.cta-box button{padding:15px 40px;background:#fff;color:#667eea;border:none;border-radius:12px;font-size:1.1em;font-weight:600;cursor:pointer}
+.browse-layout{display:flex;gap:20px}
+.sidebar{width:280px;background:#fff;border-radius:16px;padding:20px;height:fit-content;position:sticky;top:90px}
+.sidebar h2{font-size:0.8em;color:#888;text-transform:uppercase;margin-bottom:15px}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;cursor:pointer;margin-bottom:5px;transition:all 0.2s}
+.sidebar-item:hover{background:#f5f5f5}
+.sidebar-item.active{background:#e8f0fe;color:#1a73e8}
+.sidebar-item .count{margin-left:auto;background:#f0f0f0;padding:2px 8px;border-radius:10px;font-size:0.8em}
+.main-content{flex:1}
+.chapter-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:10px}
+.chapter-header h2{font-size:1.6em;color:#333;display:flex;align-items:center;gap:10px}
+.control-panel{background:linear-gradient(135deg,#f8fafc,#e2e8f0);border-radius:16px;padding:20px;margin-bottom:25px;border:2px solid #cbd5e1;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.control-panel h3{color:#475569;font-size:1em;display:flex;align-items:center;gap:8px;width:100%;margin-bottom:5px}
+.control-btns{display:flex;gap:10px;flex-wrap:wrap}
+.ctrl-btn{padding:10px 20px;border:none;border-radius:10px;cursor:pointer;font-size:0.9em;font-weight:500;transition:all 0.3s;display:flex;align-items:center;gap:6px}
+.ctrl-btn.show-all{background:#22c55e;color:#fff}
+.ctrl-btn.show-all:hover{background:#16a34a;box-shadow:0 4px 12px rgba(34,197,94,0.4)}
+.ctrl-btn.hide-all{background:#f59e0b;color:#fff}
+.ctrl-btn.hide-all:hover{background:#d97706;box-shadow:0 4px 12px rgba(245,158,11,0.4)}
+.ctrl-btn.download{background:#3b82f6;color:#fff}
+.ctrl-btn.download:hover{background:#2563eb;box-shadow:0 4px 12px rgba(59,130,246,0.4)}
+.ctrl-btn:disabled{opacity:0.6;cursor:not-allowed}
+.summary-box{background:linear-gradient(135deg,#e8f4fd,#e0e7ff);border-radius:16px;padding:25px;margin-bottom:30px;border:1px solid #c7d2fe}
+.summary-box h3{color:#4338ca;margin-bottom:15px;display:flex;align-items:center;gap:8px}
+.summary-item{background:#fff;border-radius:10px;padding:15px;margin-bottom:10px;border:1px solid #e0e7ff}
+.summary-item strong{color:#4338ca}
+.question-card{background:#fff;border-radius:16px;padding:25px;margin-bottom:15px;border:2px solid #eee}
+.question-card.correct{border-color:#22c55e;background:#f0fdf4}
+.question-card.wrong{border-color:#ef4444;background:#fef2f2}
+.question-title{font-weight:500;color:#333;margin-bottom:15px;line-height:1.6}
+.question-title pre{background:#f8f9fa;padding:15px;border-radius:8px;margin-top:10px;overflow-x:auto;font-family:monospace;font-size:0.9em}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.option{padding:12px 15px;border-radius:10px;background:#f8f9fa;border:2px solid #eee;cursor:pointer;transition:all 0.2s;font-size:0.95em}
+.option:hover{border-color:#667eea;background:#f0f4ff}
+.option.selected{border-color:#667eea;background:#e8f0fe;color:#1a73e8}
+.option.correct{border-color:#22c55e;background:#dcfce7;color:#166534}
+.option.wrong{border-color:#ef4444;background:#fee2e2;color:#991b1b}
+.option.disabled{pointer-events:none}
+.show-answer-btn{background:none;border:none;color:#667eea;cursor:pointer;font-size:0.9em;margin-top:15px;display:flex;align-items:center;gap:5px}
+.answer-box{margin-top:15px;padding:15px;background:#f0fdf4;border-radius:10px;border:1px solid #bbf7d0}
+.answer-box.fill{background:#e8f0fe;border-color:#c7d2fe}
+.answer-box p{color:#166534;margin-bottom:5px}
+.answer-box .explain{color:#666;font-size:0.9em}
+.fill-blank{margin-bottom:20px}
+.fill-blank .blank{display:inline-block;min-width:80px;border-bottom:2px solid #667eea;margin:0 5px}
+.test-header{background:#fff;border-radius:16px;padding:20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.test-header h2{color:#333}
+.test-score{text-align:right}
+.test-score .score{font-size:2em;color:#667eea;font-weight:700}
+.test-actions{display:flex;gap:15px;justify-content:center;margin-top:30px}
+.test-actions button{padding:12px 30px;border:none;border-radius:10px;font-size:1em;cursor:pointer}
+.test-actions .submit{background:#22c55e;color:#fff}
+.test-actions .back{background:#f0f0f0;color:#666}
+.section-title{font-size:1.1em;color:#333;margin:25px 0 15px;padding-bottom:10px;border-bottom:2px solid #eee}
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000}
+.loading-box{background:#fff;padding:30px 50px;border-radius:16px;text-align:center}
+.loading-box p{margin-top:15px;color:#666}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:40px;height:40px;border:4px solid #e5e7eb;border-top-color:#667eea;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto}
+@media(max-width:768px){.browse-layout{flex-direction:column}.sidebar{width:100%;position:static}.options{grid-template-columns:1fr}.home-grid{grid-template-columns:1fr}.control-panel{justify-content:center}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="loading" style="display:none" class="loading-overlay"><div class="loading-box"><div class="spinner"></div><p>正在生成PDF，请稍候...</p></div></div>
+<script>
+const EXPIRY_DATE = new Date('2026-01-06T23:59:59');
+const examData = {
+  chapter1: {
+    title: "第一章 Python概述", icon: "🐍",
+    summary: [
+      {title:"编译与解释",content:"编译型(C/C++):先编译再执行,速度快; 解释型(Python):逐行解释执行,跨平台"},
+      {title:"Python特点",content:"动态类型、缩进语法(语法要求非格式化)、高级数据结构、可读性强"},
+      {title:"标识符规则",content:"字母/数字/下划线组成,不能数字开头,区分大小写,不能用保留字"},
+      {title:"注释",content:"单行:# 注释; 多行:'''注释''' 或 \"\"\"注释\"\"\""},
+      {title:"易混淆点",content:"max/min/type/len是内置函数不是保留字; Elif可做标识符,elif是保留字"}
+    ],
+    choices: [
+      {q:"以下选项中叙述不正确的是",opts:["解释是将源代码逐条转换成目标代码并同时运行的过程","编译是将源代码转换成目标代码的过程","Python语言是解释型语言，也有编译功能","静态语言采用解释方式执行，脚本语言采用编译方式执行"],ans:3,exp:"静态语言采用编译方式，脚本语言采用解释方式，D说反了"},
+      {q:"以下对Python程序缩进格式描述错误的是",opts:["不要求缩进的代码须顶格写，前面不能有空白","缩进可以用Tab键或空格实现","严格的缩进可以约束程序结构","缩进是用来格式化Python程序的"],ans:3,exp:"Python的缩进是语法要求，不仅仅是格式化"},
+      {q:"目前Python较新的版本是",opts:["1.x","2.x","3.x","4.x"],ans:2,exp:"Python 3.x是当前主流版本"},
+      {q:"下列软件中，能编辑Python程序的是",opts:["Adobe Photoshop","IDLE","Windows Media Player","SQL Server"],ans:1,exp:"IDLE是Python官方提供的集成开发环境"},
+      {q:"以下关于IDLE中字母D指的是",opts:["Document","Development","Down","Drop"],ans:1,exp:"IDLE = Integrated Development and Learning Environment"},
+      {q:"Python程序比同样的C、C++程序更短小的原因是",opts:["Python具有高级的数据结构、无须声明变量等","Python删除了C、C++的部分功能","Python是一种定位简单的高级语言","Python是一种低级语言"],ans:0,exp:"Python具有高级数据结构和动态类型特性"},
+      {q:"在Python中，一行写多条语句时，语句之间用什么分隔",opts:[":","／",";","\\n"],ans:2,exp:"分号;用于在一行中分隔多条语句"},
+      {q:"Python文件的后缀名是",opts:[".pdf",".do",".pas",".py"],ans:3,exp:".py是Python源代码文件的扩展名"},
+      {q:"关于Python语言的注释，描述错误的是",opts:["单行注释以#开头","单行注释以单引号'开头","多行注释以'''开头和结尾","Python有单行和多行两种注释"],ans:1,exp:"单引号用于定义字符串，不是注释符号"},
+      {q:"Python 3.x中默认的文件编码类型是",opts:["UTF-8","GB2312","ASCII","Unicode"],ans:3,exp:"Python 3字符串处理用Unicode"},
+      {q:"以下可以作为Python标识符的是",opts:["123456","\\123456\\","_123456","+123456"],ans:2,exp:"标识符可以下划线开头，但不能以数字开头"},
+      {q:"下列标识符合法的是",opts:["i'm","3q","_yang","for"],ans:2,exp:"A含非法字符，B数字开头，D是保留字"},
+      {q:"下列标识符合法的是",opts:["var-name","!@#$%","_100","Elif"],ans:2,exp:"A含连字符，B含特殊符号"},
+      {q:"下列选项不是Python语言的保留字的是",opts:["try","None","max","del"],ans:2,exp:"max是内置函数，不是保留字"},
+      {q:"下面不属于Python保留字的是",opts:["def","if","type","import"],ans:2,exp:"type是内置函数"},
+      {q:"表达式输出结果为11的选项是",opts:["print(\"1+1\")","print(1+1)","print(eval(\"1+1\"))","print(eval(\"1\"+\"1\"))"],ans:3,exp:"\"1\"+\"1\"=\"11\"，eval(\"11\")=11"},
+      {q:"关于数据输入及其处理，说法正确的是",opts:["x, y=1, 1 是合法的","input函数以输入值的类型返回","x=y=z=1 不合法","print函数用于输出运算结果"],ans:0,exp:"input()函数总是返回字符串类型"}
+    ],
+    fills: []
+  },
+  chapter2: {
+    title: "第二章 基本数据类型", icon: "🔢",
+    summary: [
+      {title:"数据类型",content:"数值型(int/float/complex)、序列型(str/list/tuple)、集合型(set/dict)、布尔型(bool)"},
+      {title:"进制表示",content:"二进制0b、八进制0o、十六进制0x"},
+      {title:"运算符",content:"/除法返回浮点、//整除、%取模、**幂运算(指数可为小数)"},
+      {title:"真值判断",content:"假值：None/False/0/空序列/空字典；非零数为True"},
+      {title:"常用函数",content:"type()返回类型、id()返回内存地址(非值)、divmod(a,b)返回(a//b,a%b)"}
+    ],
+    choices: [
+      {q:"Python中，0和0.0的区别是",opts:["大小不同","类型不同","进制不同","完全一样"],ans:1,exp:"0是int类型，0.0是float类型"},
+      {q:"以下不是Python数据类型名称的是",opts:["int","float","list","datatype"],ans:3,exp:"datatype不是Python的类型名称"},
+      {q:"以下数字中八进制的是",opts:["0b101","172","0o711","0x456"],ans:2,exp:"0o开头表示八进制"},
+      {q:"关于复数，说法错误的是",opts:["语法是real+imag*1j","实部虚部都是浮点数","虚部用j或J表示","z.real获取虚部"],ans:3,exp:"z.real获取实部，z.imag获取虚部"},
+      {q:"表达式 10<20<=30 的结果是",opts:["True","0","False","1"],ans:0,exp:"链式比较：True and True = True"},
+      {q:"假设a=5，则not a的值是",opts:["True","0","False","1"],ans:2,exp:"5是非零数为True，not True = False"},
+      {q:"关于数值操作符，描述错误的是",opts:["x/y表示x与y的商","x//y表示整数商","x%y表示余数","x**y中y必须是整数"],ans:3,exp:"**的指数可以是小数，如4**0.5=2.0"},
+      {q:"关于Python语言的注释，以下选项中描述错误的是",opts:["单行注释以#开头","单行注释以单引号'开头","多行注释以'''开头和结尾","Python有两种注释方式"],ans:1,exp:"单引号用于字符串，不是注释"},
+      {q:"关于赋值语句，描述错误的是",opts:["可以同时给多个变量赋值","x,y=y,x可以交换值","a+=1和a=a+1不等价","=表示赋值"],ans:2,exp:"a+=1和a=a+1完全等价"},
+      {q:"x=43,y=False; (x>=y and 'A'<'B' and not y)的值是",opts:["False","语法错误","True","\"假\""],ans:2,exp:"True and True and True = True"},
+      {q:"下列语句非法的是",opts:["x = y = 2","x, y = 2","x, y = 1, 2","x = 1"],ans:1,exp:"左边两个变量，右边一个值，无法解包"},
+      {q:"表达式 'y'<'x' == False 的结果是",opts:["True","Error","None","False"],ans:3,exp:"'y'<'x'为False，False==False为True，但链式比较结果为False"},
+      {q:"在Python中，一个命令行写多条语句时，语句之间用___分隔",opts:[",",";","_","..."],ans:1,exp:"分号用于分隔同一行的多条语句"},
+      {q:"关于数据输入及其处理，以下说法正确的是",opts:["x, y = 1 是合法的","input函数以输入值的类型返回","x=y=z=1 不合法","print函数用于输出运算结果"],ans:3,exp:"print用于输出"},
+      {q:"关于内置函数，描述错误的是",opts:["abs(x)返回绝对值","type(x)返回类型","sorted(x)返回排序列表","id(x)返回x的值"],ans:3,exp:"id(x)返回内存地址，不是值"},
+      {q:"Python语言中，表达式输出结果为11的选项是",opts:["print(\"1+1\")","print(1+1)","print(eval(\"1+1\"))","print(eval(\"1\"+\"1\"))"],ans:3,exp:"\"1\"+\"1\"=\"11\"，eval(\"11\")=11"},
+      {q:"关于字符串，描述错误的是",opts:["可以正向和反向遍历","有正向和反向两种索引","[n:m]包含n和m","用引号括起来"],ans:2,exp:"[n:m]左闭右开，包含n不包含m"},
+      {q:"与[a-zA-Z0-9_]等价的正则表达式元字符是",opts:["\\w","\\W","\\s","\\d"],ans:0,exp:"\\w匹配字母、数字、下划线"},
+      {q:"正则表达式元字符___用来表示前面的字符或子模式0次或多次出现",opts:["*","+","|","?"],ans:0,exp:"*表示0次或多次"},
+      {q:"下列关于正则表达式的说法，不正确的是",opts:["正则表达式广泛应用于各种文本处理应用程序","正则表达式是由普通字符以及特殊字符组成的文字模式","正则表达式中可以直接使用元字符作为普通字符使用","正则表达式中\\s表示空白字符，即等价于[\\f\\n\\r\\t\\v]"],ans:2,exp:"元字符需要转义才能作为普通字符"}
+    ],
+    fills: [
+      {q:"函数 divmod(20, 3) 的结果是",ans:"(6, 2)"},
+      {q:"\"{0:.4f}\".format(3.1415926)的输出结果是",ans:"3.1416"},
+      {q:"当作为条件表达式时，空值、空字符串、空列表、空元组、空集合、空字典的布尔值为",ans:"False"},
+      {q:"表达式 pow(3, 2) == 3**2 的值为",ans:"True"},
+      {q:"正则表达式元字符___用来匹配任何空白字符，包括空格、制表符、换页符",ans:"\\s"},
+      {q:"函数 eval('500/10')、eval(\"1+2\") 和 int(\"234\") 的结果分别是",ans:"50.0、3、234"},
+      {q:"表达式 1001 == 0x3e7 的结果是",ans:"False (0x3e7=999)"},
+      {q:"如 s=\"Python\\n编程\\t很容易学\"，函数 len(s) 的结果是",ans:"14"},
+      {q:"已知 x = 'a234b123c'，并且re模块已导入，则表达式 re.split('\\d+', x) 的值为",ans:"['a', 'b', 'c']"},
+      {q:"计算表达式的值(a=7,b=-2,c=4)：(1)3*4**5/2 (2)a*3%2 (3)a%3+b*b-c//5 (4)b**2-4*a*c",ans:"(1)1536.0 (2)1 (3)5 (4)-108"}
+    ]
+  },
+  chapter3: {
+    title: "第三章 程序控制结构", icon: "🔄",
+    summary: [
+      {title:"三种结构",content:"顺序结构、分支结构(if/elif/else)、循环结构(for/while)"},
+      {title:"循环控制",content:"break终止整个循环；continue跳过本次循环；else在循环正常结束时执行"},
+      {title:"算法特性",content:"有穷性、确定性、可行性、输入(可无)、输出(必有)"},
+      {title:"IPO模式",content:"Input输入 → Process处理 → Output输出"},
+      {title:"条件表达式",content:"值1 if 条件 else 值2（三元运算符）"}
+    ],
+    choices: [
+      {q:"下列描述正确的是",opts:["continue终止循环","break终止循环","if不能嵌套在循环中","循环不能嵌套在if中"],ans:1,exp:"break终止整个循环，continue只跳过本次"},
+      {q:"关于分支结构，正确的是",opts:["必须有else子句","if-else构成双分支","if和elif实现双分支紧凑形式","分支结构的嵌套只能在else子句中"],ans:1,exp:"if-else构成双分支结构"},
+      {q:"不属于流程图基本元素的是",opts:["起止框","提示框","判断框","输入输出框"],ans:1,exp:"没有提示框这个标准元素"},
+      {q:"关于算法，不正确的是",opts:["是解决问题的方法和步骤","必须有输入","算法经过有限步骤后能够停止","必须有输出"],ans:1,exp:"算法可以没有输入，但必须有输出"},
+      {q:"不是IPO模式一部分的是",opts:["InOut","Process","Input","Output"],ans:0,exp:"IPO是Input/Process/Output"},
+      {q:"a,b=5,0; if a>5: b=b+2; b=b+2; print(b) 输出",opts:["0","2","7","9"],ans:1,exp:"5>5为False，只执行b=0+2=2"},
+      {q:"x=3; if x>=3: x=x+1; elif x>=4: x=x+2; elif x>5: x=x+3; print(x) 输出",opts:["3","4","6","9"],ans:1,exp:"进入第一个if后不再判断elif"},
+      {q:"x=7; y=12 if x>5 else 20; print(y) 输出",opts:["7","5","12","20"],ans:2,exp:"x>5为True，y取12"},
+      {q:"i=1;s=0;while i<=10: if i%3!=0: s=s+i; i=i+1; print(s) 输出",opts:["18","37","55","0"],ans:1,exp:"累加1-10中不能被3整除的数"},
+      {q:"i=0;while i<10: i=i+2; if i>6: break; print(i,end=\",\"); else: print(12); print(123) 输出",opts:["0,2,4,6,8,123","2,4,6,123","0,2,4,6,8,12,123","2,4,6,12"],ans:1,exp:"i=8时break，不执行else"}
+    ],
+    fills: [
+      {q:"算法的表示常用的方法包括：自然语言、______、______",ans:"流程图、伪代码"},
+      {q:"Python选择结构包括单分支选择结构、______、______和嵌套选择结构",ans:"双分支选择结构、多分支选择结构"},
+      {q:"Python循环结构包括______和______两种循环结构",ans:"for、while"},
+      {q:"Python循环结构根据需要可以使用三种特殊语句：______语句、______语句和else语句",ans:"break、continue"},
+      {q:"在循环语句中，______语句的作用是提前退出当前循环结构",ans:"break"},
+      {q:"在循环语句中，______语句的作用是提前进入下一个循环",ans:"continue"},
+      {q:"表达式 20 if 10>5 else -20 的值为",ans:"20"},
+      {q:"表达式 5 if 10>20 else (0 if 5>8 else 1) 的值为",ans:"1"},
+      {q:"for n in range(5): print(n, end=',') 的运行结果",ans:"0,1,2,3,4,"},
+      {q:"for i in range(1, 20, 2): print(i, end=';') 的运行结果",ans:"1;3;5;7;9;11;13;15;17;19;"}
+    ]
+  },
+  chapter4: {
+    title: "第四章 序列数据类型", icon: "📋",
+    summary: [
+      {title:"序列类型",content:"列表list(可变,有序,[])、元组tuple(不可变,有序,())、字符串str(不可变)"},
+      {title:"字典dict",content:"映射类型,键值对,可变,键不可重复"},
+      {title:"集合set",content:"无序不重复,支持交(&)并(|)差(-)运算"},
+      {title:"切片",content:"[start:stop:step] 左闭右开"},
+      {title:"可变类型",content:"list、dict、set；不可变：int、str、tuple"}
+    ],
+    choices: [
+      {q:"表达式[1,2]*3的值为",opts:["[1,2,1,2,1,2]","[1,2,3]","[1,2]","[1,1,1,2,2,2]"],ans:0,exp:"列表乘法表示重复"},
+      {q:"已知集合x={1,2,3},y={3,4,5}，则x-y结果是",opts:["{1,2}","{1,2,3}","{1,2,4,5}","{4,5}"],ans:0,exp:"差集：x中有而y中没有的元素"},
+      {q:"已知x=[10,20,30,40,50,60,70]，执行x[1:-2]的结果是",opts:["[20,30,40,50,60]","[20,30,40,50]","[20,30,40]","[30,40,50]"],ans:1,exp:"从索引1到倒数第2个(不含)"},
+      {q:"已知字典x={\"red\":1,\"green\":2}，执行x[3]=\"blue\"之后，x的值为",opts:["{\"red\":1,3:\"blue\"}","{3:\"blue\",\"green\":2}","{\"red\":1,\"green\":2,\"blue\":3}","{\"red\":1,\"green\":2,3:\"blue\"}"],ans:3,exp:"添加新键值对"},
+      {q:"关于Python的列表，以下选项中描述错误的是",opts:["列表的长度不可变","列表用[]表示","列表是一个可以修改数据项的序列类型","使用list()可以创建一个空列表"],ans:0,exp:"列表长度可变"},
+      {q:"______是Python的映射类型",opts:["元组","字典","字符串","列表"],ans:1,exp:"字典是映射类型"},
+      {q:"下列程序输出结果是______\nx=[10,20,30,40]\ns=0\nfor i in x:\n    if i>30:\n        break\n    s=s+i\nprint(s)",opts:["30","60","100","0"],ans:1,exp:"10+20+30=60，遇到40时break"},
+      {q:"下列语句，可用于创建列表的是",opts:["(1,2,3)","[1,2,3]","{1,2,3}","<1,2,3>"],ans:1,exp:"[]用于创建列表"},
+      {q:"字典中值的数据类型可以是",opts:["字典","元组","数值","以上都可以"],ans:3,exp:"字典的值可以是任意类型"},
+      {q:"下列类型中属于可变类型的是",opts:["str","int","tuple","list"],ans:3,exp:"list是可变类型"},
+      {q:"下列语句中，能创建元组的是",opts:["t=1,","t=[1]","t=(1)","t={1}"],ans:0,exp:"t=1,创建单元素元组"},
+      {q:"下列能正确创建字典的是",opts:["a=dict()","a={x:10,y:20}","a=dict([1,2],[3,4])","a=(1,2,3)"],ans:0,exp:"dict()创建空字典"},
+      {q:"可变参数**kw收集关键字参数，并将这些参数存储到一个______中",opts:["列表","元组","字典","数组"],ans:2,exp:"**kw收集为字典"},
+      {q:"执行下列程序后，屏幕输出结果是______\nk=11,13,15\nprint(k)",opts:["11,13,15","[11,13,15]","(11,13,15)","{11,13,15}"],ans:2,exp:"逗号分隔创建元组"},
+      {q:"已知a={2,4,7,10},b={1,2,7}，则表达式a&b的值是",opts:["{2,7}","{4,10}","{1,2,4,7,10}","{1,2,7}"],ans:0,exp:"&是交集运算"}
+    ],
+    fills: [
+      {q:"程序功能：统计给定列表中素数个数，计算它们的和，并输出。请填空完成程序。\ndef SuShu(a):\n    for j in range(2,a):\n        if(a%j==0):\n            return 0\n    return 1\nls=[11,27,97,87,23,29,231,187,37,68]\nn=i=0\n______\nwhile i<len(ls):\n    if ______:\n        s=s+ls[i]\n    ______\n    i=i+1\nprint(\"n={},s={}\".format(n,s))",ans:"s=0、SuShu(ls[i])、n=n+1"}
+    ]
+  },
+  chapter5: {
+    title: "第五章 函数的设计与使用", icon: "⚙️",
+    summary: [
+      {title:"函数定义",content:"def 函数名(参数): 函数体; return 返回值"},
+      {title:"参数类型",content:"*args收集为元组，**kwargs收集为字典"},
+      {title:"返回值",content:"return x,y返回元组；无return返回None"},
+      {title:"变量作用域",content:"局部变量函数结束后释放；global声明全局变量"},
+      {title:"lambda",content:"lambda是保留字；语法：lambda 参数: 表达式；不能含return"}
+    ],
+    choices: [
+      {q:"关于函数，描述错误的是",opts:["有利于简化程序结构","有利于提高代码复用率","有利于模块设计和分工协作","有利于提高执行速度"],ans:3,exp:"函数调用有额外开销，不是为了提高速度"},
+      {q:"def func(x,y): return x,y 返回值类型是",opts:["int","list","tuple","set"],ans:2,exp:"return x,y返回元组"},
+      {q:"s=5; def f(x): global s; s=s+x; return s; print(f(10)) 输出",opts:["15","5","10","报错"],ans:0,exp:"global s声明全局变量，s=5+10=15"},
+      {q:"以下不是函数作用的是",opts:["增强可读性","提高执行速度","降低编程复杂度","复用代码"],ans:1,exp:"函数主要目的不是提高执行速度"},
+      {q:"f=lambda x,y:x*y; print(f(12,34)) 结果是",opts:["12","34","45","408"],ans:3,exp:"12*34=408"},
+      {q:"关于lambda，错误的是",opts:["lambda不是保留字","lambda是匿名函数","lambda不能含return","lambda定义特殊函数"],ans:0,exp:"lambda是Python的保留字"},
+      {q:"**kw收集关键字参数存储到",opts:["列表","元组","字典","数组"],ans:2,exp:"*args→元组，**kwargs→字典"},
+      {q:"关于递归，不正确的是",opts:["书写简单","可用非递归替代","执行效率高","要有终止条件"],ans:2,exp:"递归效率通常较低"},
+      {q:"函数定义错误的是",opts:["def vfunc(*a, b)","def vfunc(a, b)","def vfunc(a, *b)","def vfunc(a, b=2)"],ans:0,exp:"*a后的参数必须用关键字方式传递"},
+      {q:"关于变量作用域，错误的是",opts:["全局变量在函数外定义","局部变量函数退出后释放","局部变量函数退出后仍存在","global声明全局变量"],ans:2,exp:"局部变量在函数退出后被释放"}
+    ],
+    fills: [
+      {q:"Python中定义函数的关键字是",ans:"def"},
+      {q:"在函数内部可以通过关键字______来定义全局变量",ans:"global"},
+      {q:"当函数的返回值不止一个时，默认的返回值是以______类型出现",ans:"元组(tuple)"},
+      {q:"如果函数中没有return语句或return语句不带任何返回值，则该函数的返回值为",ans:"None"},
+      {q:"函数返回时，传入的组合数据类型变量______(会/不会)被释放",ans:"不会"},
+      {q:"已知f=lambda x:5，那么表达式f(3)的值为",ans:"5"},
+      {q:"已知函数定义def func(*p): return sum(p)，那么表达式func(1,2,3)的值为",ans:"6"},
+      {q:"以下函数需要在其中引用一个全局变量，请填写语句：\ndef fun():\n    ______\n    k=k+1",ans:"global k"},
+      {q:"以下函数返回参数所给字符串的逆序字符串，如reverse('321tsua')返回'aust123'，请将程序补充完整。\ndef reverse(s):\n    ns=______\n    i,j=0,-1\n    while i<len(s):\n        ns[i]=s[______]\n        ______\n        j=j-1\n    return______",ans:"list(s)、j、i=i+1、''.join(ns)"}
+    ]
+  },
+  chapter6: {
+    title: "第六章 文件和文件夹操作", icon: "📁",
+    summary: [
+      {title:"打开模式",content:"默认'rt'；'r'读/'w'写(覆盖)/'a'追加(不删除)/'b'二进制/'+'读写"},
+      {title:"读取方法",content:"read()全部；readline()一行；readlines()所有行返回列表"},
+      {title:"文件指针",content:"seek()移动指针；tell()返回当前位置"},
+      {title:"with语句",content:"自动关闭文件，无需手动close()"},
+      {title:"os模块",content:"listdir()列目录；remove()删文件；rmdir()删空目录"}
+    ],
+    choices: [
+      {q:"open()函数默认的打开模式是",opts:["'rt'","'at'","'b+'","'wt'"],ans:0,exp:"默认以文本模式读取'rt'"},
+      {q:"os模块中，os.rmdir(path)的功能是",opts:["创建目录path","删除目录path","将当前目录改为path","获取当前工作目录"],ans:1,exp:"rmdir删除空目录"},
+      {q:"用于读取一行内容的是",opts:["file.read()","file.readline()","file.readall()","file.readlines()"],ans:1,exp:"readline()读取一行"},
+      {q:"os.path模块中分割路径的函数是",opts:["split","abspath","exists","getsize"],ans:0,exp:"split()将路径分割为(目录,文件名)"},
+      {q:"不是文件打开模式的是",opts:["'rb'","'c'","'r'","'w'"],ans:1,exp:"Python没有'c'模式"},
+      {q:"file=open('res.txt','rb')中read(count)的count表示",opts:["行数","字节数","列表","字符数"],ans:1,exp:"'rb'是二进制模式，count表示字节数"},
+      {q:"获取目录下文件列表的是",opts:["listdir()","curdir()","startfile()","getcwd()"],ans:0,exp:"listdir()返回目录内容列表"},
+      {q:"删除文件夹的函数是",opts:["remove()","rename()","rmdir()","replace()"],ans:2,exp:"remove()删文件，rmdir()删空目录"},
+      {q:"fp=open('file2.txt','w')，不正确的是",opts:["文件必须存在","文件可以存在","文件可以不存在","只可写操作"],ans:0,exp:"'w'模式会创建新文件，不要求文件存在"},
+      {q:"shutil模块生成压缩文件的函数是",opts:["make_archive()","makezipfile()","makearchive()","savezipfile()"],ans:0,exp:"make_archive()创建压缩文件"},
+      {q:"重定位文件指针的函数是",opts:["seek()","tell()","next()","close()"],ans:0,exp:"seek()移动指针，tell()返回位置"},
+      {q:"创建文件对象的方法是",opts:["create()","new()","File()","open()"],ans:3,exp:"open()函数创建文件对象"},
+      {q:"关于文件，错误的是",opts:["'b'表示二进制","'+'表示读写","readline()返回字符串","'a'模式删除已有内容"],ans:3,exp:"'a'是追加，不删除内容；'w'才会清空"},
+      {q:"关于with语句，错误的是",opts:["必须手动close()","打印输出文件内容","item是字符串","lines是列表"],ans:0,exp:"with语句自动关闭文件"},
+      {q:"以下程序的输出结果是______\nfo=open(\"text.txt\",'w+')\nx,y='this is a test','hello'\nfo.write(x)\nprint(fo.read())\nfo.close()",opts:["this is a test hello","this is a test","空字符串","this is a test+hello"],ans:2,exp:"写入后指针在末尾，read()读不到内容"},
+      {q:"有一个文件记录了1000个人的高考成绩，每行20字节，若想读取最后10行，不可能用到的函数是",opts:["seek()","readline()","open()","以上都可能用到"],ans:3,exp:"所有这些函数都可能用到"}
+    ],
+    fills: []
+  },
+  chapter7: {
+    title: "第七章 面向对象程序设计", icon: "🎯",
+    summary: [
+      {title:"三大特性",content:"封装(隐藏细节)、继承(获得父类属性方法)、多态(不同响应)"},
+      {title:"类定义",content:"class 子类(父类): 继承语法，class是小写"},
+      {title:"特殊方法",content:"__init__创建时调用；__del__销毁时调用"},
+      {title:"私有成员",content:"__开头定义；访问：对象名._类名__私有成员名"},
+      {title:"装饰器",content:"@classmethod类方法(cls)；@staticmethod静态方法"}
+    ],
+    choices: [
+      {q:"访问私有成员的方式是",opts:["对象名._私有成员","类名._私有成员名","对象名._类名","对象名._类名__私有成员名"],ans:3,exp:"通过_类名__私有成员名访问"},
+      {q:"默认析构方法进行的是",opts:["资源清理","初始化","存储分析","参数传递"],ans:0,exp:"析构方法用于资源清理"},
+      {q:"类Pet的派生类定义正确的是",opts:["class Dog: ; Pet","Class Dog: Pet","class Dog(Pet):","Class Dog extends Pet:"],ans:2,exp:"语法：class 子类名(父类名):"},
+      {q:"数据与操作绑定，隐藏细节，称为",opts:["扩展","继承","多态","封装"],ans:3,exp:"封装是将数据和操作绑定并隐藏"},
+      {q:"访问属性使用的符号是",opts:[".","→","->","::"],ans:0,exp:"Python使用点号.访问属性"},
+      {q:"指定类方法的装饰器是",opts:["@staticmethod","@classmethod","static","method"],ans:1,exp:"@classmethod定义类方法"},
+      {q:"子类调用父类方法使用",opts:["super","call","parent","_class_函数"],ans:0,exp:"super()调用父类方法"},
+      {q:"__init__在什么时候调用",opts:["程序开始时","程序结束时","实例销毁时","实例创建时"],ans:3,exp:"__init__在对象创建时调用"}
+    ],
+    fills: []
+  },
+  chapter10: {
+    title: "第十章 Python第三方库", icon: "📦",
+    summary: [
+      {title:"库的分类",content:"内置函数(无需import)、标准库(随Python安装)、第三方库(需pip安装)"},
+      {title:"PyInstaller",content:"-F生成单个可执行文件；-D生成目录；-i指定图标"},
+      {title:"机器学习",content:"TensorFlow, PyTorch, MXNet, Caffe2"},
+      {title:"其他常用库",content:"Django(Web)、BeautifulSoup(HTML解析)、Jieba(中文分词)、wordcloud(词云)"},
+      {title:"易混淆",content:"Arcade是游戏开发库，不是深度学习库"}
+    ],
+    choices: [
+      {q:"关于Python内置库、标准库和第三方库的描述，正确的是",opts:["第三方库需要单独安装才能使用","内置库需要import才能调用","标准库需要pip安装","以上都不对"],ans:0,exp:"第三方库需要pip安装"},
+      {q:"PyInstaller打包成单个文件的参数是",opts:["-D","-L","-i","-F"],ans:3,exp:"-F生成单个可执行文件"},
+      {q:"TensorFlow的应用领域是",opts:["机器学习","数据可视化","Web开发","文本分析"],ans:0,exp:"TensorFlow是机器学习框架"},
+      {q:"不属于深度学习库的是",opts:["Arcade","TensorFlow","Caffe2","MXNet"],ans:0,exp:"Arcade是游戏开发库"},
+      {q:"HTML和XML解析库是",opts:["mayavi","TVTK","Pygame","BeautifulSoup"],ans:3,exp:"BeautifulSoup解析HTML/XML"},
+      {q:"Python Web开发框架是",opts:["WeRoBot","Wheel","Pygame","Django"],ans:3,exp:"Django是Web开发框架"},
+      {q:"中文分词库是",opts:["Pandas","Python-docx","BeautifulSoup4","Jieba"],ans:3,exp:"Jieba是中文分词库"},
+      {q:"生成词云的库是",opts:["Matplotlib","TVTK","Mayavi","wordcloud"],ans:3,exp:"wordcloud生成词云"},
+      {q:"以下属于Python文本处理第三方库的是",opts:["Matplotlib","openPyXL","Jieba","vispy"],ans:2,exp:"Jieba用于中文文本分词处理"}
+    ],
+    fills: []
+  }
+};
+
+let state = {mode:'home',chapter:'chapter1',testQs:[],answers:{},showResults:false,showAns:{},testScope:'all',showAllAns:false};
+
+function checkExpiry(){ return new Date() > EXPIRY_DATE; }
+
+function showAllAnswers(show){
+  const d = examData[state.chapter];
+  d.choices.forEach((_,i)=>{ state.showAns[`${state.chapter}_c_${i}`] = show; });
+  if(d.fills) d.fills.forEach((_,i)=>{ state.showAns[`${state.chapter}_f_${i}`] = show; });
+  state.showAllAns = show;
+  render();
+}
+
+async function downloadPDF(){
+  document.getElementById('loading').style.display = 'flex';
+  await new Promise(r=>setTimeout(r,100));
+  try {
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+    const pw=210,ph=297,ml=15,mr=15,mt=20,mb=20;
+    const cw=pw-ml-mr;
+    let y=mt;
+    
+    doc.addFont('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/fonts/Roboto/Roboto-Regular.ttf','Roboto','normal');
+    
+    const addPage=()=>{doc.addPage();y=mt;};
+    const checkPage=(h)=>{if(y+h>ph-mb)addPage();};
+    
+    const wrap=(t,mw,fs)=>{
+      doc.setFontSize(fs);
+      const words=t.split('');
+      let lines=[],line='';
+      for(let w of words){
+        if(doc.getTextWidth(line+w)>mw){lines.push(line);line=w;}
+        else line+=w;
+      }
+      if(line)lines.push(line);
+      return lines;
+    };
+    
+    doc.setFontSize(22);
+    doc.setTextColor(102,126,234);
+    doc.text('Python期末复习题库',pw/2,y,{align:'center'});
+    y+=15;
+    doc.setFontSize(10);
+    doc.setTextColor(128);
+    doc.text('生成日期: '+new Date().toLocaleDateString('zh-CN'),pw/2,y,{align:'center'});
+    y+=20;
+    
+    const chs=Object.keys(examData);
+    for(let ci=0;ci<chs.length;ci++){
+      const ch=chs[ci],d=examData[ch];
+      checkPage(25);
+      doc.setFillColor(102,126,234);
+      doc.roundedRect(ml,y-5,cw,12,2,2,'F');
+      doc.setFontSize(14);
+      doc.setTextColor(255);
+      doc.text(d.title,ml+5,y+3);
+      y+=18;
+      
+      if(d.choices.length){
+        doc.setFontSize(11);
+        doc.setTextColor(80);
+        doc.text('[ 选择题 ]',ml,y);
+        y+=8;
+        
+        for(let i=0;i<d.choices.length;i++){
+          const q=d.choices[i];
+          checkPage(50);
+          doc.setFontSize(10);
+          doc.setTextColor(50);
+          const qLines=wrap((i+1)+'. '+q.q.replace(/\n/g,' '),cw-5,10);
+          for(let l of qLines){doc.text(l,ml,y);y+=5;}
+          y+=2;
+          
+          const opts=['A','B','C','D'];
+          for(let oi=0;oi<q.opts.length;oi++){
+            checkPage(8);
+            const isAns=oi===q.ans;
+            if(isAns){doc.setTextColor(34,197,94);doc.setFont(undefined,'bold');}
+            else{doc.setTextColor(80);doc.setFont(undefined,'normal');}
+            const oLines=wrap(opts[oi]+'. '+q.opts[oi]+(isAns?' [correct]':''),cw-10,9);
+            for(let l of oLines){doc.text(l,ml+5,y);y+=4.5;}
+          }
+          doc.setFont(undefined,'normal');
+          doc.setTextColor(100,100,180);
+          doc.setFontSize(8);
+          const expLines=wrap('解析: '+q.exp,cw-10,8);
+          for(let l of expLines){checkPage(5);doc.text(l,ml+5,y);y+=4;}
+          y+=6;
+        }
+      }
+      
+      if(d.fills&&d.fills.length){
+        checkPage(15);
+        doc.setFontSize(11);
+        doc.setTextColor(80);
+        doc.text('[ 填空题 ]',ml,y);
+        y+=8;
+        
+        for(let i=0;i<d.fills.length;i++){
+          const q=d.fills[i];
+          checkPage(30);
+          doc.setFontSize(10);
+          doc.setTextColor(50);
+          const qLines=wrap((i+1)+'. '+q.q.replace(/\n/g,' ').replace(/______/g,'____'),cw-5,10);
+          for(let l of qLines){doc.text(l,ml,y);y+=5;}
+          doc.setTextColor(34,197,94);
+          doc.setFont(undefined,'bold');
+          const aLines=wrap('答案: '+q.ans,cw-10,9);
+          for(let l of aLines){checkPage(5);doc.text(l,ml+5,y);y+=4.5;}
+          doc.setFont(undefined,'normal');
+          y+=6;
+        }
+      }
+      y+=10;
+    }
+    
+    doc.save('Python期末复习题库.pdf');
+  } catch(e){ console.error(e); alert('PDF生成失败，请重试'); }
+  document.getElementById('loading').style.display='none';
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(checkExpiry()){
+    app.innerHTML = `<div class="expired"><div class="expired-box"><h1>⏰</h1><h1>复习资料已过期</h1><p>该复习资料的有效期已结束</p></div></div>`;
+    return;
+  }
+  
+  const chapters = Object.keys(examData);
+  const total = chapters.reduce((s,c)=>s+examData[c].choices.length+(examData[c].fills?.length||0),0);
+  
+  let html = `<header><div class="header-content">
+    <div class="logo" onclick="state.mode='home';render()">
+      <div class="logo-icon">📚</div>
+      <div><h1>Python期末复习系统</h1><p>共${total}道题目 | 有效期至2026年1月6日</p></div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-btn secondary ${state.mode==='home'?'active':''}" onclick="state.mode='home';render()">🏠 首页</button>
+      <button class="nav-btn secondary ${state.mode==='browse'?'active':''}" onclick="state.mode='browse';render()">📖 题库</button>
+      <button class="nav-btn primary" onclick="startTest('all')">⚡ 综合测试</button>
+    </div>
+  </div></header>`;
+  
+  if(state.mode==='home'){
+    html += `<div class="container">
+      <div style="text-align:center;margin:40px 0">
+        <h2 style="font-size:2em;color:#333;margin-bottom:10px">Python期末考试复习</h2>
+        <p style="color:#888">系统化复习，轻松应对考试</p>
+      </div>
+      <div class="home-grid">`;
+    chapters.forEach(ch=>{
+      const d = examData[ch];
+      const cnt = d.choices.length + (d.fills?.length||0);
+      html += `<div class="chapter-card" onclick="state.chapter='${ch}';state.mode='browse';state.showAllAns=false;render()">
+        <div class="icon">${d.icon}</div>
+        <h3>${d.title}</h3>
+        <p>${cnt}道题目</p>
+        <div class="btns">
+          <button class="btn browse" onclick="event.stopPropagation();state.chapter='${ch}';state.mode='browse';state.showAllAns=false;render()">浏览</button>
+          <button class="btn test" onclick="event.stopPropagation();startTest('${ch}')">测试</button>
+        </div>
+      </div>`;
+    });
+    html += `</div>
+      <div class="cta-box">
+        <div style="font-size:3em;margin-bottom:15px">🏆</div>
+        <h2>准备好了吗？</h2>
+        <p>从所有章节随机抽取25道题进行综合测试</p>
+        <button onclick="startTest('all')">开始综合测试</button>
+      </div>
+    </div>`;
+  }
+  else if(state.mode==='browse'){
+    const d = examData[state.chapter];
+    html += `<div class="container"><div class="browse-layout">
+      <div class="sidebar"><h2>章节目录</h2>`;
+    chapters.forEach(ch=>{
+      const cnt = examData[ch].choices.length + (examData[ch].fills?.length||0);
+      html += `<div class="sidebar-item ${state.chapter===ch?'active':''}" onclick="state.chapter='${ch}';state.showAns={};state.showAllAns=false;render()">
+        <span>${examData[ch].icon}</span>
+        <span>${examData[ch].title}</span>
+        <span class="count">${cnt}</span>
+      </div>`;
+    });
+    html += `</div><div class="main-content">
+      <div class="chapter-header">
+        <h2>${d.icon} ${d.title}</h2>
+        <button class="nav-btn primary" onclick="startTest('${state.chapter}')">🎯 本章测试</button>
+      </div>
+      
+      <div class="control-panel">
+        <h3>🎛️ 操作面板</h3>
+        <div class="control-btns">
+          <button class="ctrl-btn show-all" onclick="showAllAnswers(true)">👁️ 显示全部答案</button>
+          <button class="ctrl-btn hide-all" onclick="showAllAnswers(false)">🙈 隐藏全部答案</button>
+          <button class="ctrl-btn download" onclick="downloadPDF()">📥 下载PDF题库</button>
+        </div>
+      </div>
+      
+      <div class="summary-box"><h3>📌 知识小结</h3>`;
+    d.summary.forEach(s=>{
+      html += `<div class="summary-item"><strong>${s.title}：</strong>${s.content}</div>`;
+    });
+    html += `</div>`;
+    
+    if(d.choices.length){
+      html += `<div class="section-title">📝 选择题 (${d.choices.length}题)</div>`;
+      d.choices.forEach((q,i)=>{
+        const key = `${state.chapter}_c_${i}`;
+        html += `<div class="question-card">
+          <div class="question-title">${i+1}. ${q.q.replace(/\n/g,'<br>')}</div>
+          <div class="options">`;
+        q.opts.forEach((opt,oi)=>{
+          const isAns = state.showAns[key] && oi===q.ans;
+          html += `<div class="option ${isAns?'correct':''}">${String.fromCharCode(65+oi)}. ${opt}</div>`;
+        });
+        html += `</div>
+          <button class="show-answer-btn" onclick="state.showAns['${key}']=!state.showAns['${key}'];render()">
+            ${state.showAns[key]?'🙈 隐藏答案':'👁 显示答案'}
+          </button>`;
+        if(state.showAns[key]){
+          html += `<div class="answer-box"><p>✓ 答案：${String.fromCharCode(65+q.ans)}</p><p class="explain">💡 ${q.exp}</p></div>`;
+        }
+        html += `</div>`;
+      });
+    }
+    
+    if(d.fills && d.fills.length){
+      html += `<div class="section-title">✏️ 填空题 (${d.fills.length}题)</div>`;
+      d.fills.forEach((q,i)=>{
+        const key = `${state.chapter}_f_${i}`;
+        html += `<div class="question-card">
+          <div class="question-title">${i+1}. ${q.q.replace(/\n/g,'<br>').replace(/______/g,'<span class="blank">______</span>')}</div>
+          <button class="show-answer-btn" onclick="state.showAns['${key}']=!state.showAns['${key}'];render()">
+            ${state.showAns[key]?'🙈 隐藏答案':'👁 显示答案'}
+          </button>`;
+        if(state.showAns[key]){
+          html += `<div class="answer-box fill"><p>✓ 答案：${q.ans}</p></div>`;
+        }
+        html += `</div>`;
+      });
+    }
+    html += `</div></div></div>`;
+  }
+  else if(state.mode==='test'){
+    const score = state.showResults ? state.testQs.filter((q,i)=>state.answers[i]===q.ans).length : 0;
+    html += `<div class="container">
+      <div class="test-header">
+        <div>
+          <h2>${state.testScope==='all'?'🎯 综合测试':'📖 '+examData[state.testScope]?.title}</h2>
+          <p style="color:#888">共${state.testQs.length}道题</p>
+        </div>
+        ${state.showResults?`<div class="test-score"><div class="score">${score}/${state.testQs.length}</div><p>正确率 ${Math.round(score/state.testQs.length*100)}%</p></div>`:''}
+      </div>`;
+    
+    state.testQs.forEach((q,i)=>{
+      const userAns = state.answers[i];
+      const isCorrect = userAns === q.ans;
+      const cardClass = state.showResults ? (isCorrect ? 'correct' : 'wrong') : '';
+      html += `<div class="question-card ${cardClass}">
+        <div class="question-title">${i+1}. ${q.q.replace(/\n/g,'<br>')}</div>
+        <div class="options">`;
+      q.opts.forEach((opt,oi)=>{
+        let optClass = state.showResults ? 'disabled ' : '';
+        if(state.showResults){
+          if(oi===q.ans) optClass += 'correct';
+          else if(userAns===oi) optClass += 'wrong';
+        } else if(userAns===oi) optClass += 'selected';
+        html += `<div class="option ${optClass}" onclick="if(!state.showResults){state.answers[${i}]=${oi};render()}">${String.fromCharCode(65+oi)}. ${opt}</div>`;
+      });
+      html += `</div>`;
+      if(state.showResults){
+        html += `<div class="answer-box"><p class="explain">💡 ${q.exp}</p></div>`;
+      }
+      html += `</div>`;
+    });
+    
+    html += `<div class="test-actions">`;
+    if(!state.showResults){
+      html += `<button class="submit" onclick="state.showResults=true;render()">✓ 提交答案</button>`;
+    } else {
+      html += `<button class="back" onclick="state.mode='home';render()">🏠 返回首页</button>`;
+    }
+    html += `</div></div>`;
+  }
+  
+  app.innerHTML = html;
+}
+
+function startTest(scope){
+  state.testScope = scope;
+  let qs = [];
+  const chapters = scope==='all' ? Object.keys(examData) : [scope];
+  chapters.forEach(ch=>{
+    examData[ch].choices.forEach(q=>{
+      qs.push({...q, chapter:ch});
+    });
+  });
+  qs = qs.sort(()=>Math.random()-0.5).slice(0,Math.min(25,qs.length));
+  state.testQs = qs;
+  state.answers = {};
+  state.showResults = false;
+  state.mode = 'test';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
